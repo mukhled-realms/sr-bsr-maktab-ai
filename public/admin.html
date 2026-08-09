@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الإدارة - مكتب السرعة للخدمات الرقمية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b0f19; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .gold-accent { color: #fbbf24; }
+        .gold-bg { background-color: #fbbf24; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <!-- حماية الصفحة بكلمة مرور عند الفتح -->
+    <script>
+        // كلمة المرور الخاصة بلوحة التحكم (يمكنك تغييرها إلى أي رقم تريده)
+        const adminPin = "5590"; 
+        const enteredPin = prompt("الرجاء إدخال رمز الحماية الخاص بلوحة الإدارة:");
+        
+        if (enteredPin !== adminPin) {
+            alert("رمز الحماية غير صحيح! عذراً لا يمكنك الدخول.");
+            document.body.innerHTML = `
+                <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #0b0f19; color: #ef4444; font-size: 24px; font-weight: bold; text-align: center;">
+                    ⛔ عذراً، الصفحة محمية ولا يمكن الوصول إليها.
+                </div>
+            `;
+            throw new Error("Unauthorized access");
+        }
+    </script>
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <!-- الهيدر الفخم -->
+        <header class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold gold-accent">⚙️ لوحة تحكم مكتب السرعة</h1>
+                <p class="text-sm text-gray-400 mt-1">حاسبة الأسعار الذكية وإدارة الطلبات المباشرة</p>
+            </div>
+            <div class="bg-yellow-500/10 border border-yellow-500/30 px-4 py-2 rounded-xl text-yellow-400 text-sm font-semibold">
+                🟢 النظام محمي وآمن
+            </div>
+        </header>
+
+        <!-- قسم حاسبة الأسعار الذكية -->
+        <section class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl">
+            <div class="flex items-center gap-2 mb-6 border-b border-gray-800 pb-3">
+                <span class="text-xl">🧮</span>
+                <h2 class="text-lg font-bold text-white">حاسبة الأسعار الفورية وتجهيز الرسائل</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">اختر الخدمة المطلوبة:</label>
+                    <select id="serviceType" onchange="updateCalculator()" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-yellow-500">
+                        <option value="650" data-name="تجديد إقامة">تجديد إقامة (شامل الرسوم والأتعاب)</option>
+                        <option value="1200" data-name="نقل خدمات">نقل خدمات (شامل الرسوم والأتعاب)</option>
+                        <option value="800" data-name="إصدار سجل تجاري">إصدار سجل تجاري (شامل الرسوم والأتعاب)</option>
+                        <option value="300" data-name="خدمات منصة قوى / مدد">خدمات منصة قوى / مدد (أتعاب المكتب)</option>
+                        <option value="150" data-name="استشارة عامة">استشارة عامة وتوجيه</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">رسوم إضافية / غرامات (إن وجدت):</label>
+                    <input type="number" id="extraFees" value="0" oninput="updateCalculator()" placeholder="0" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-yellow-500">
+                </div>
+            </div>
+
+            <div class="mt-6 bg-gray-800/80 border border-yellow-500/30 p-5 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <span class="text-sm text-gray-400 block">الإجمالي النهائي الواجب تحصيله:</span>
+                    <span id="totalPrice" class="text-3xl font-extrabold gold-accent">650 ريال</span>
+                </div>
+                <button onclick="copyReadyMessage()" class="w-full sm:w-auto gold-bg hover:bg-yellow-400 text-gray-900 font-bold px-6 py-3 rounded-xl transition duration-200 shadow-lg flex items-center justify-center gap-2">
+                    <span>📋</span> نسخ رسالة السعر للواتساب
+                </button>
+            </div>
+        </section>
+
+        <!-- جدول الطلبات الواردة الفورية -->
+        <section class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl">
+            <div class="flex items-center gap-2 mb-6 border-b border-gray-800 pb-3">
+                <span class="text-xl">📥</span>
+                <h2 class="text-lg font-bold text-white">الطلبات الواردة حديثاً</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-right text-sm text-gray-300">
+                    <thead class="bg-gray-800 text-gray-400 border-b border-gray-700">
+                        <tr>
+                            <th class="p-3 rounded-r-xl">اسم العميل</th>
+                            <th class="p-3">رقم الجوال</th>
+                            <th class="p-3">الخدمة</th>
+                            <th class="p-3">الحالة</th>
+                            <th class="p-3 rounded-l-xl">إجراءات سريعة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="liveOrdersTable" class="divide-y divide-gray-800">
+                        <tr>
+                            <td class="p-3 font-medium text-white">مخلد العنزي</td>
+                            <td class="p-3" dir="ltr">0592859590</td>
+                            <td class="p-3">تجديد إقامة</td>
+                            <td class="p-3"><span class="bg-yellow-500/20 text-yellow-400 px-2.5 py-1 rounded-lg text-xs border border-yellow-500/30">قيد المعالجة</span></td>
+                            <td class="p-3">
+                                <a href="https://wa.me/966592859590?text=السلام%20عليكم%20أستاذ%20مخلد،%20بخصوص%20طلبك..." target="_blank" class="bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">مراسلة واتساب</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        function updateCalculator() {
+            const serviceSelect = document.getElementById('serviceType');
+            const basePrice = parseFloat(serviceSelect.value) || 0;
+            const extra = parseFloat(document.getElementById('extraFees').value) || 0;
+            const total = basePrice + extra;
+            
+            document.getElementById('totalPrice').textContent = total + ' ريال';
+        }
+
+        function copyReadyMessage() {
+            const serviceSelect = document.getElementById('serviceType');
+            const serviceName = serviceSelect.options[serviceSelect.selectedIndex].getAttribute('data-name');
+            const total = document.getElementById('totalPrice').textContent;
+            
+            const message = `عزيزي العميل، تكلفة خدمة (${serviceName}) الشاملة هي: ${total}.\nلإتمام وإنجاز المعاملة نرجو تحويل المبلغ وإرسال الإيصال هنا. شاكرين اختياركم مكتب السرعة للخدمات الرقمية.`;
+            
+            navigator.clipboard.writeText(message);
+            alert('تم نسخ رسالة السعر والتفاصيل بنجاح! يمكنك لصقها مباشرة في محادثة الواتساب.');
+        }
+    </script>
+</body>
+</html>
