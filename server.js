@@ -2,40 +2,41 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// السماح باستقبال البيانات بصيغة JSON
+// JSON استقبال البيانات
 app.use(express.json({ limit: '10kb' }));
 
-// 1. تفعيل CORS (السماح لموقعك فقط بالاتصال بالسيرفر)
+// السماح بالاتصال
 app.use(cors({
-    origin: process.env.CLIENT_ORIGIN || '*' // في الإنتاج ضع رابط موقعك فقط
+    origin: process.env.CLIENT_ORIGIN || '*'
 }));
 
-// 2. حماية من الإغراق (Rate Limiting) - 5 طلبات فقط بالدقيقة لكل مستخدم
-const apiLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // دقيقة واحدة
-    max: 5,
-    message: { error: 'عذراً، تجاوزت عدد المحاولات المسموحة. يرجى الانتظار دقيقة.' }
+// حماية الإفراط (Rate Limiting)
+const apilimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, 
+    max: 10, 
+    message: { error: 'عذراً، تجاوزت عدد المحاولات المسموحة، يرجى الانتظار دقيقة.' }
 });
 
-app.use('/api/', apiLimiter);
+app.use('/api/', apilimiter);
 
-// 3. مسار استقبال الطلبات من الواجهة
+// **تفعيل عرض ملفات الموقع الواجهة ولوحة التحكم من مجلد public**
+app.use(express.static(path.join(__dirname, 'public')));
+
+// مسار استقبال الطلبات من الواجهة
 app.post('/api/submit-request', async (req, res) => {
     const { name, phone, service, pdplAgreed } = req.body;
 
-    // التحقق من موافقة العميل
     if (!pdplAgreed) {
         return res.status(400).json({ error: 'يجب الموافقة على سياسة الخصوصية.' });
     }
 
-    // هنا مستقبلاً (في المرحلة القادمة) سنربط هذا الجزء بـ Google Sheets ولوحة تحكم السوداني
-    console.log(`[طلب جديد] - الخدمة: ${service} | العميل: ${name} | الجوال: ${phone}`);
-
-    // إرسال رد بنجاح العملية
+    console.log(`[طلب جديد] - الاسم: ${name} | الخدمة: ${service} | الجوال: ${phone}`);
+    
     return res.json({ success: true, message: 'تم تجهيز الطلب بنجاح' });
 });
 
